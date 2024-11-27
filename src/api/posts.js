@@ -1,7 +1,7 @@
 const BASE_URL = 'https://dummyjson.com';
 
 export const getPosts = async (page = 1, limit = 10) => {
-  const url = `${BASE_URL}/posts?limit=${limit}&skip=${(page * limit) - limit}`;
+  const url = `${BASE_URL}/posts?limit=${limit}&skip=${(page * limit)}`;
 
   try {
     const response = await fetch(url);

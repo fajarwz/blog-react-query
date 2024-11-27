@@ -1,30 +1,19 @@
 import Pagination from "./Pagination"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getPosts } from "../api/posts";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Content() {
-    const [data, setData] = useState({});
-    const [loading, setLoading] = useState(true);
-
     const params = new URLSearchParams(window.location.search);
     const pageParam = params.get('page');
     const initialPage = pageParam ? parseInt(pageParam, 10) - 1 : 0;
     const [currentPage, setCurrentPage] = useState(initialPage);
 
-    useEffect(() => {
-        fetchPosts(currentPage);
-    }, [currentPage]);
-
-    const fetchPosts = async (page) => {
-        setLoading(true);
-        try {
-            const data = await getPosts(page + 1);
-            setData(data);
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-        }
-        setLoading(false);
-    };
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ['blogs', currentPage], // Unique key for this query
+        queryFn: () => getPosts(currentPage),
+        staleTime: 20000, // the length of time you want to keep the data in the cache in milliseconds.
+    });
 
     const handlePageChange = ({ selected }) => {
         const nextPage = selected;
@@ -39,9 +28,8 @@ export default function Content() {
         setCurrentPage(nextPage);
     };
 
-    if (loading) {
-        return <div>Loading...</div>
-    }
+    if (isLoading) return <p>Loading...</p>;
+    if (isError) return <p>Error: {error.message}</p>;
 
     if (data.posts?.length > 0) {
         const limit = 10;
